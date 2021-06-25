@@ -6,45 +6,48 @@ def sieve(X, n):
     return np.setdiff1d(X, [n**2 + n*y for y in range(0, X[-1])])
 
 class App(tk.Tk):
-    cells  = []
+    cells = []
 
     def __init__(self, root):
         self.root = root
-        self.frame1 = Frame(root,width=700, height=20)
-        self.frame2 = Frame(root,width=700, height=700)
+        self.frame1 = Frame(root)
+        self.frame2 = Frame(root)
         self.cells = []
         root.title('Sieve of Eratosthenes')
-        root.geometry('800x800')
+        #root.geometry('800x800')
         self.label = Label(self.frame1, text="Input Size of List").pack(side=LEFT)
         self.e1 = Entry(self.frame1)
         self.e1.pack(side=LEFT)
         self.label_text = StringVar()
         self.label_text.set('Awaiting size of Sieve...')
         self.result = Label(self.frame2, textvariable=self.label_text).grid(row=0, column=0)
-        self.button = Button(self.frame1, text='print sieve', command=self.print_result).pack(side=LEFT)
+        self.button = Button(self.frame1, text='print cells', command=self.print_result).pack(side=LEFT)
         self.quit_button = Button(self.frame1, text='exit', command=quit).pack(side=LEFT)
         self.frame1.pack(padx=1, pady=1)
         self.frame2.pack(padx=10, pady=10)
 
 
-    def createDisplay(self, sieveList):
-        square = int(np.ceil(np.sqrt(len(sieveList))))
-        for i in range(square):
-            for j in range(square):
-                if i+j*square < len(sieveList):
-                    cell = Frame(self.frame2, bg='white', highlightbackground="black",
-                                highlightcolor="black", highlightthickness=1,
-                                width=self.frame2.winfo_screenwidth()/square,
-                                height=self.frame2.winfo_screenheight()/square,  padx=3,  pady=3)
-                    self.update_cells(cell)
-                    Label(cell, text=str(sieveList[i+j*square])).pack(side=LEFT)
-                    #print(cell)
-                    cell.grid(row=j, column=i)
-
+    def createDisplay(self, cellList, sieveList):
+        self.cells = []
+        for widgets in self.frame2.winfo_children():
+            widgets.destroy()
+        square = 10
+        #square = int(np.ceil(np.sqrt(len(cellList))))
+        #create a blank cell with '*' symbol
+        for i in range(1, len(cellList)+1, 1):
+            cell = Frame(self.frame2, bg='white', highlightbackground="black",
+                         highlightcolor="black", highlightthickness=1,
+                         #width=self.frame2.winfo_screenwidth()/square,
+                         #height=self.frame2.winfo_screenheight()/square,
+                         padx=5,  pady=5)
+            self.update_cells(cell)
+            Label(cell, text=str(cellList[i-1]), height=cell.winfo_height(), width=cell.winfo_width()).pack(side=LEFT)
+            #print(cell)
+            cell.grid(row=(i)//10, column=i%10)
+            Grid.columnconfigure(self.frame2, index=i, weight=1)
+            Grid.rowconfigure(self.frame2, index=i, weight=1)
         self.cells[0].config(bg='black')
         #print(sieveList)
-        print(self.cells)
-        self.label_text.set("")
         return 0
 
     def print_result(self):
@@ -52,13 +55,15 @@ class App(tk.Tk):
         if self.e1.get() != '':
             n = int(self.e1.get())
             # print(type(N))
-            if type(n) is int:
-                x = np.linspace(2, n, n - 1, dtype=int)
-                for i in x:
-                    x = sieve(x, i)
-                #print(x)
-                self.createDisplay(x)
-                #self.label_text.set(np.array2string(x,separator=','))
+            if isinstance(n, int):
+                self.createDisplay(np.linspace(2,n, n-1, dtype=int),np.linspace(2,n, n-1, dtype=int))
+
+    def run_sieve(self, n):
+        x = np.linspace(2, n, n - 1, dtype=int)
+        for i in x:
+            x = sieve(x, i)
+        # print(x)
+        self.createDisplay(x, x)
 
     def update_cells(self, cell):
         self.cells.append(cell)
